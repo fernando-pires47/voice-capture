@@ -108,6 +108,26 @@ docker compose up --build
 docker compose up --build -d
 ```
 
+### Production mode (local container)
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+This mode uses your existing `.env`, forces `APP_ENV=prod`, and sets restart policy to `unless-stopped` for both containers.
+
+### Production logs
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
+```
+
+### Production stop
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+```
+
 ### Access
 
 - App: `http://127.0.0.1:8080`
@@ -135,6 +155,15 @@ docker compose logs -f
 ```bash
 docker compose down
 ```
+
+### Verification checklist
+
+```bash
+docker ps
+```
+
+- Open `http://127.0.0.1:8080`
+- Check `http://127.0.0.1:8000/api/health`
 
 ## API Endpoints
 
