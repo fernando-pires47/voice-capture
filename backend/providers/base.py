@@ -12,5 +12,6 @@ class AIProvider(ABC):
         text: str,
         model: str | None = None,
         language: str | None = None,
+        output_mode: str | None = None,
     ) -> str:
         raise NotImplementedError

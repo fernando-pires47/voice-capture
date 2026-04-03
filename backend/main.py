@@ -77,6 +77,7 @@ async def correct_text(
             provider=payload.provider,
             correct_model=payload.correct_model,
             language=payload.language,
+            output_mode=payload.output_mode,
         )
         return CorrectTextResponse(**result)
     except ValueError as exc:

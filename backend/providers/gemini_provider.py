@@ -3,6 +3,12 @@ import base64
 import httpx
 
 from providers.base import AIProvider
+from providers.prompts import (
+    TRANSCRIPTION_COMMAND,
+    build_grammar_system_command,
+    build_grammar_user_prompt,
+    resolve_language_name,
+)
 
 
 class GeminiProvider(AIProvider):
@@ -25,13 +31,9 @@ class GeminiProvider(AIProvider):
         self.default_correct_model = correct_model
 
     def transcribe_audio(self, audio_bytes: bytes, mime_type: str, model: str | None = None) -> str:
-        prompt = (
-            "Transcribe this audio to plain text. "
-            "Do not summarize. Preserve wording and punctuation when possible."
-        )
         return self._generate_with_audio(
             model=model or self.default_transcribe_model,
-            prompt=prompt,
+            prompt=TRANSCRIPTION_COMMAND,
             audio_bytes=audio_bytes,
             mime_type=mime_type,
         )
@@ -41,13 +43,12 @@ class GeminiProvider(AIProvider):
         text: str,
         model: str | None = None,
         language: str | None = None,
+        output_mode: str | None = None,
     ) -> str:
-        target_language = self._language_name(language)
+        target_language = resolve_language_name(language)
         prompt = (
-            f"Correct grammar and punctuation in {target_language} only. Preserve original meaning and tone. "
-            "Do not translate to another language. "
-            "Return only corrected text.\n\n"
-            f"Text:\n{text}"
+            f"{build_grammar_system_command(target_language, output_mode or 'correction')}\n\n"
+            f"{build_grammar_user_prompt(text)}"
         )
         return self._generate_text(
             model=model or self.default_correct_model,
@@ -127,9 +128,3 @@ class GeminiProvider(AIProvider):
                 text_fragments.append(value)
 
         return "\n".join(fragment.strip() for fragment in text_fragments if fragment.strip()).strip()
-
-    @staticmethod
-    def _language_name(language: str | None) -> str:
-        if language == "pt-BR":
-            return "Portuguese (Brazil)"
-        return "English (US)"

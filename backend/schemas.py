@@ -25,6 +25,7 @@ class CorrectTextRequest(BaseModel):
     provider: str | None = None
     correct_model: str | None = None
     language: Literal["en-US", "pt-BR"] | None = None
+    output_mode: Literal["correction", "prompt"] | None = None
 
 
 class CorrectTextResponse(BaseModel):
@@ -32,6 +33,7 @@ class CorrectTextResponse(BaseModel):
     provider: str
     models: CorrectModelInfo
     language: Literal["en-US", "pt-BR"]
+    output_mode: Literal["correction", "prompt"]
 
 
 class ProviderModels(BaseModel):

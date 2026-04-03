@@ -1,6 +1,7 @@
 from openai import OpenAI
 
 from providers.base import AIProvider
+from providers.prompts import build_grammar_system_command, build_grammar_user_prompt, resolve_language_name
 
 
 class OpenAICompatibleProvider(AIProvider):
@@ -42,22 +43,18 @@ class OpenAICompatibleProvider(AIProvider):
         text: str,
         model: str | None = None,
         language: str | None = None,
+        output_mode: str | None = None,
     ) -> str:
-        target_language = self._language_name(language)
+        target_language = resolve_language_name(language)
         response = self.client.chat.completions.create(
             model=model or self.default_correct_model,
             temperature=0,
             messages=[
                 {
                     "role": "system",
-                    "content": (
-                        "You are a grammar correction assistant. "
-                        f"Correct grammar and punctuation in {target_language} only, preserve original meaning and tone. "
-                        "Do not translate to another language. "
-                        "Return only the corrected text."
-                    ),
+                    "content": build_grammar_system_command(target_language, output_mode or "correction"),
                 },
-                {"role": "user", "content": text},
+                {"role": "user", "content": build_grammar_user_prompt(text)},
             ],
         )
 
@@ -77,9 +74,3 @@ class OpenAICompatibleProvider(AIProvider):
         if "ogg" in mime_type:
             return "ogg"
         return "bin"
-
-    @staticmethod
-    def _language_name(language: str | None) -> str:
-        if language == "pt-BR":
-            return "Portuguese (Brazil)"
-        return "English (US)"

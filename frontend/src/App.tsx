@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type StatusType = "idle" | "recording" | "processing" | "done" | "error";
+type OutputMode = "correction" | "prompt";
 
 type ProviderConfig = {
   correct: string[];
@@ -20,6 +23,7 @@ type CorrectTextResponse = {
   corrected_text?: string;
   provider?: string;
   language?: string;
+  output_mode?: OutputMode;
   models?: {
     transcribe?: string;
     correct?: string;
@@ -35,6 +39,7 @@ const STORAGE_PROVIDER_KEY = "voiceCapture.grammarProvider";
 const STORAGE_MODEL_KEY = "voiceCapture.grammarModel";
 const STORAGE_LANGUAGE_KEY = "voiceCapture.language";
 const STORAGE_APPLY_GRAMMAR_KEY = "voiceCapture.applyGrammarCorrection";
+const STORAGE_OUTPUT_MODE_KEY = "voiceCapture.outputMode";
 const DEFAULT_HINT = "Tip: Use a quiet environment for better transcription quality.";
 const DEFAULT_SUPPORTED_LANGUAGES = ["en-US", "pt-BR"];
 
@@ -94,6 +99,7 @@ export default function App() {
   const modelRef = useRef("");
   const languageRef = useRef("en-US");
   const applyGrammarCorrectionRef = useRef(true);
+  const outputModeRef = useRef<OutputMode>("correction");
   const [isRecording, setIsRecording] = useState(false);
   const [timerLabel, setTimerLabel] = useState("00:00");
   const [speechSupported, setSpeechSupported] = useState(true);
@@ -108,6 +114,7 @@ export default function App() {
   const [model, setModel] = useState("");
   const [language, setLanguage] = useState("en-US");
   const [applyGrammarCorrection, setApplyGrammarCorrection] = useState(true);
+  const [outputMode, setOutputMode] = useState<OutputMode>("correction");
   const [providerLoadingFailed, setProviderLoadingFailed] = useState(false);
 
   const hasTextContent = Boolean(rawOutput.trim() || correctedOutput.trim());
@@ -116,6 +123,7 @@ export default function App() {
   const supportedLanguages = aiOptions?.languages?.length ? aiOptions.languages : DEFAULT_SUPPORTED_LANGUAGES;
   const providerSelectDisabled = !applyGrammarCorrection || providerLoadingFailed || providers.length === 0;
   const modelSelectDisabled = !applyGrammarCorrection || providerLoadingFailed || providerModels.length === 0;
+  const outputModeSelectDisabled = !applyGrammarCorrection;
 
   const startDisabled = !speechSupported || isRecording;
   const stopDisabled = !speechSupported || !isRecording;
@@ -132,6 +140,10 @@ export default function App() {
 
   function storeApplyGrammarSelection(nextValue: boolean): void {
     localStorage.setItem(STORAGE_APPLY_GRAMMAR_KEY, String(nextValue));
+  }
+
+  function storeOutputModeSelection(nextMode: OutputMode): void {
+    localStorage.setItem(STORAGE_OUTPUT_MODE_KEY, nextMode);
   }
 
   function resetTimer(): void {
@@ -156,7 +168,11 @@ export default function App() {
 
   async function processText(text: string): Promise<void> {
     setStatus({ type: "processing", label: "Processing" });
-    setHint("Sending text to AI grammar correction...");
+    setHint(
+      outputModeRef.current === "prompt"
+        ? "Sending text to AI structured prompt..."
+        : "Sending text to AI grammar correction...",
+    );
 
     try {
       const response = await fetch("/api/correct-text", {
@@ -169,6 +185,7 @@ export default function App() {
           provider: providerRef.current || null,
           correct_model: modelRef.current || null,
           language: languageRef.current || null,
+          output_mode: outputModeRef.current,
         }),
       });
 
@@ -178,6 +195,9 @@ export default function App() {
       }
 
       const data = (await response.json()) as CorrectTextResponse;
+      const resolvedOutputMode = data.output_mode === "prompt" ? "prompt" : "correction";
+      setOutputMode(resolvedOutputMode);
+      storeOutputModeSelection(resolvedOutputMode);
       setCorrectedOutput(data.corrected_text || "");
       setStatus({ type: "done", label: "Completed" });
       setHint("Transcription and correction completed.");
@@ -221,7 +241,9 @@ export default function App() {
     setStatus({ type: "idle", label: "Finalizing" });
     setHint(
       applyGrammarCorrection
-        ? "Transcription captured. Applying grammar correction..."
+        ? outputMode === "prompt"
+          ? "Transcription captured. Applying structured prompt..."
+          : "Transcription captured. Applying grammar correction..."
         : "Transcription captured. Finalizing without grammar correction...",
     );
     recognitionRef.current.stop();
@@ -282,6 +304,10 @@ export default function App() {
   }, [applyGrammarCorrection]);
 
   useEffect(() => {
+    outputModeRef.current = outputMode;
+  }, [outputMode]);
+
+  useEffect(() => {
     const savedValue = localStorage.getItem(STORAGE_APPLY_GRAMMAR_KEY);
     if (savedValue === "false") {
       setApplyGrammarCorrection(false);
@@ -292,6 +318,13 @@ export default function App() {
     const savedLanguage = localStorage.getItem(STORAGE_LANGUAGE_KEY);
     if (savedLanguage && DEFAULT_SUPPORTED_LANGUAGES.includes(savedLanguage)) {
       setLanguage(savedLanguage);
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedOutputMode = localStorage.getItem(STORAGE_OUTPUT_MODE_KEY);
+    if (savedOutputMode === "correction" || savedOutputMode === "prompt") {
+      setOutputMode(savedOutputMode);
     }
   }, []);
 
@@ -517,6 +550,11 @@ export default function App() {
     storeLanguageSelection(nextLanguage);
   }
 
+  function onOutputModeChange(nextMode: OutputMode): void {
+    setOutputMode(nextMode);
+    storeOutputModeSelection(nextMode);
+  }
+
   return (
     <>
       <main className="mx-auto max-w-5xl px-5 pb-12 pt-10 sm:px-6">
@@ -542,7 +580,7 @@ export default function App() {
             <span className="text-sm font-bold tabular-nums text-slate-500">{timerLabel}</span>
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-3" aria-label="Grammar provider selection">
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" aria-label="Grammar provider selection">
             <label className="grid gap-1.5 text-xs font-semibold text-slate-500" htmlFor="languageSelect">
               <span>Language</span>
               <select
@@ -590,6 +628,20 @@ export default function App() {
                     {modelId}
                   </option>
                 ))}
+              </select>
+            </label>
+
+            <label className="grid gap-1.5 text-xs font-semibold text-slate-500" htmlFor="outputModeSelect">
+              <span>Correction Structure</span>
+              <select
+                id="outputModeSelect"
+                className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-sm text-slate-900 outline-none ring-blue-200 transition focus-visible:ring-2"
+                value={outputMode}
+                onChange={(event) => onOutputModeChange(event.target.value as OutputMode)}
+                disabled={outputModeSelectDisabled}
+              >
+                <option value="correction">Correction</option>
+                <option value="prompt">Prompt</option>
               </select>
             </label>
           </div>
@@ -663,17 +715,27 @@ export default function App() {
                 Copy (1)
               </button>
             </div>
-            <textarea
-              value={rawOutput}
-              readOnly
-              placeholder="Transcript will appear here."
-              className="min-h-[220px] w-full resize-y rounded-xl border border-slate-200 bg-white p-3 text-base leading-relaxed text-slate-900 outline-none ring-blue-200 placeholder:text-slate-400 focus-visible:ring-2 max-sm:min-h-[180px]"
-            />
+            <div className="min-h-[220px] rounded-xl border border-slate-200 bg-white p-3 text-base leading-relaxed text-slate-900 max-sm:min-h-[180px]">
+              {rawOutput.trim() ? (
+                    <div className="text-sm leading-relaxed text-slate-900 [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_li]:my-1 [&_ol]:mb-3 [&_ol]:pl-5 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{rawOutput}</ReactMarkdown>
+              </div>
+              ) :
+              (
+                <p className="m-0 text-slate-400">
+                Transcript will appear here.
+              </p>
+              )}
+          
+      
+            </div>
           </article>
 
           <article className="rounded-[14px] border border-slate-200 bg-white p-4 shadow-panel">
             <div className="mb-2.5 flex items-center justify-between gap-2">
-              <h2 className="m-0 text-base font-semibold text-slate-900">Grammar Corrected</h2>
+              <h2 className="m-0 text-base font-semibold text-slate-900">
+                {outputMode === "prompt" ? "Structured Output" : "Grammar Corrected"}
+              </h2>
               <button
                 type="button"
                 className="border-0 bg-transparent p-0 text-sm font-semibold text-blue-900 transition hover:text-blue-950"
@@ -682,16 +744,19 @@ export default function App() {
                 Copy (2)
               </button>
             </div>
-            <textarea
-              value={correctedOutput}
-              readOnly
-              placeholder={
-                applyGrammarCorrection
-                  ? "Corrected text will appear here."
-                  : "Grammar correction is disabled."
-              }
-              className="min-h-[220px] w-full resize-y rounded-xl border border-slate-200 bg-white p-3 text-base leading-relaxed text-slate-900 outline-none ring-blue-200 placeholder:text-slate-400 focus-visible:ring-2 max-sm:min-h-[180px]"
-            />
+            <div className="min-h-[220px] rounded-xl border border-slate-200 bg-white p-3 text-base leading-relaxed text-slate-900 max-sm:min-h-[180px]">
+              {correctedOutput.trim() && applyGrammarCorrection ? (
+                <div className="text-sm leading-relaxed text-slate-900 [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_li]:my-1 [&_ol]:mb-3 [&_ol]:pl-5 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{correctedOutput}</ReactMarkdown>
+                </div>
+              ) : (
+                <p className="m-0 text-slate-400">
+                  {applyGrammarCorrection
+                    ? "Structured output will appear here."
+                    : "Grammar correction is disabled."}
+                </p>
+              )}
+            </div>
           </article>
         </section>
       </main>

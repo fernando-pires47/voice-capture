@@ -42,6 +42,16 @@ class AudioPipeline:
             )
         return language
 
+    def _resolve_output_mode(self, requested_output_mode: str | None) -> str:
+        output_mode = (requested_output_mode or "correction").strip().lower()
+        allowed_modes = {"correction", "prompt"}
+        if output_mode not in allowed_modes:
+            raise ValueError(
+                f"Unsupported output mode '{output_mode}'. "
+                f"Allowed: {', '.join(sorted(allowed_modes))}"
+            )
+        return output_mode
+
     def _transcribe_model_for(self, provider: str) -> str:
         if provider == "gemini":
             return self.settings.gemini_transcribe_model
@@ -108,15 +118,18 @@ class AudioPipeline:
         provider: str | None = None,
         correct_model: str | None = None,
         language: str | None = None,
+        output_mode: str | None = None,
     ) -> dict:
         provider_id, selected_model = self._resolve_grammar_selection(provider, correct_model)
         selected_language = self._resolve_language(language)
+        selected_output_mode = self._resolve_output_mode(output_mode)
         ai_provider = build_provider(provider_id, selected_model)
         corrected_text = await asyncio.to_thread(
             ai_provider.correct_grammar,
             text,
             selected_model,
             selected_language,
+            selected_output_mode,
         )
 
         return {
@@ -126,4 +139,5 @@ class AudioPipeline:
                 "correct": selected_model,
             },
             "language": selected_language,
+            "output_mode": selected_output_mode,
         }
