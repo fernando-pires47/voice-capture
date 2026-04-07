@@ -22,10 +22,9 @@ GRAMMAR_PROMPT_MODE_SYSTEM_COMMAND_TEMPLATE = (
     "Read the transcript in {target_language} and preserve the original meaning and tone. "
     "Correct grammar and punctuation. "
     "Do not translate to another language. "
-    "Return Markdown only using exactly these sections and in this order: "
-    "## Corrected Text, ## Key Points, ## Tasks / Action Items. "
-    "In Key Points and Tasks / Action Items, use bullet points. "
-    "If there are no tasks, add one bullet saying '- None identified.'"
+    "Return Markdown with sections chosen dynamically based on the content and subject. "
+    "Include only sections that are relevant. "
+    "Avoid empty headings."
 )
 
 
