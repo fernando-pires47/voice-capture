@@ -40,7 +40,8 @@ const STORAGE_MODEL_KEY = "voiceCapture.grammarModel";
 const STORAGE_LANGUAGE_KEY = "voiceCapture.language";
 const STORAGE_APPLY_GRAMMAR_KEY = "voiceCapture.applyGrammarCorrection";
 const STORAGE_OUTPUT_MODE_KEY = "voiceCapture.outputMode";
-const DEFAULT_HINT = "Tip: Use a quiet environment for better transcription quality.";
+const DEFAULT_HINT =
+  "Tip: Use a quiet environment. Voice commands (EN/PT): comma/virgula, period/ponto, question mark/interrogacao, new line/nova linha, new bullet/novo item.";
 const DEFAULT_SUPPORTED_LANGUAGES = ["en-US", "pt-BR"];
 
 function providerLabel(providerId: string): string {
@@ -71,6 +72,91 @@ function formatTime(ms: number): string {
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(totalSeconds % 60).padStart(2, "0");
   return `${minutes}:${seconds}`;
+}
+
+type SpokenCommandRule = {
+  pattern: RegExp;
+  replacement: string;
+};
+
+const SPOKEN_COMMAND_RULES: SpokenCommandRule[] = [
+  { pattern: /\b(new paragraph|novo paragrafo)\b/gi, replacement: "\n\n" },
+  { pattern: /\b(paragraph break|quebra de paragrafo)\b/gi, replacement: "\n\n" },
+  { pattern: /\b(new line|nova linha)\b/gi, replacement: "\n" },
+  { pattern: /\b(line break|quebra de linha)\b/gi, replacement: "\n" },
+  { pattern: /\b(new bullet|novo item|novo topico)\b/gi, replacement: "\n- " },
+  { pattern: /\b(new title|novo titulo)\b/gi, replacement: "\n## " },
+  { pattern: /\b(comma|virgula)\b/gi, replacement: "," },
+  { pattern: /\b(period|ponto final|ponto|dot|full stop)\b/gi, replacement: "." },
+  { pattern: /\b(question mark|interrogacao)\b/gi, replacement: "?" },
+  { pattern: /\b(exclamation mark|exclamacao)\b/gi, replacement: "!" },
+  { pattern: /\b(colon|dois pontos)\b/gi, replacement: ":" },
+  { pattern: /\b(semicolon|ponto e virgula)\b/gi, replacement: ";" },
+];
+
+function applySpokenCommands(input: string): string {
+  let next = input;
+  for (const rule of SPOKEN_COMMAND_RULES) {
+    next = next.replace(rule.pattern, rule.replacement);
+  }
+  return next;
+}
+
+function normalizeSpacing(input: string): string {
+  let next = input;
+  next = next.replace(/[ \t]+/g, " ");
+  next = next.replace(/\s*\n\s*/g, "\n");
+  next = next.replace(/\n{3,}/g, "\n\n");
+  next = next.replace(/\s+([,.;:!?])/g, "$1");
+  next = next.replace(/([,.;:!?])(?!\s|\n|$)/g, "$1 ");
+  next = next.replace(/\n([,.;:!?])/g, "$1");
+  return next.trim();
+}
+
+function applySentenceCasing(input: string): string {
+  const chars = [...input.toLowerCase()];
+  let shouldUppercase = true;
+
+  for (let i = 0; i < chars.length; i += 1) {
+    const char = chars[i];
+    if (/[a-zA-ZÀ-ÖØ-öø-ÿ]/.test(char) && shouldUppercase) {
+      chars[i] = char.toUpperCase();
+      shouldUppercase = false;
+      continue;
+    }
+
+    if (char === "." || char === "?" || char === "!" || char === "\n") {
+      shouldUppercase = true;
+    }
+  }
+
+  return chars.join("");
+}
+
+function formatTranscriptDelta(input: string): string {
+  const withCommands = applySpokenCommands(input);
+  const withSpacing = normalizeSpacing(withCommands);
+  return applySentenceCasing(withSpacing);
+}
+
+function mergeTranscript(previous: string, delta: string): string {
+  const formattedDelta = formatTranscriptDelta(delta);
+  if (!formattedDelta.trim()) {
+    return previous;
+  }
+
+  const base = previous.trimEnd();
+  if (!base) {
+    return formattedDelta;
+  }
+
+  if (formattedDelta.startsWith("\n")) {
+    return `${base}${formattedDelta}`;
+  }
+
+  const separator = /[\n\s]$/.test(base) ? "" : " ";
+  const merged = `${base}${separator}${formattedDelta}`;
+  return applySentenceCasing(normalizeSpacing(merged));
 }
 
 function getStatusClass(type: StatusType): string {
@@ -411,8 +497,7 @@ export default function App() {
       }
 
       setRawOutput((previous) => {
-        const existing = previous.trim();
-        return existing ? `${existing} ${transcriptDelta.trim()}` : transcriptDelta.trim();
+        return mergeTranscript(previous, transcriptDelta);
       });
     };
 

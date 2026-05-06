@@ -1,14 +1,18 @@
 services:
   api:
     restart: unless-stopped
+    build:
+      context: ./backend
     env_file:
       - .env
-    environment:
-      APP_ENV: prod
     ports:
       - "127.0.0.1:8000:8000"
 
   web:
     restart: unless-stopped
+    build:
+      context: ./frontend
+    depends_on:
+      - api
     ports:
       - "127.0.0.1:8080:80"
