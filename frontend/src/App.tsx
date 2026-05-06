@@ -41,7 +41,7 @@ const STORAGE_LANGUAGE_KEY = "voiceCapture.language";
 const STORAGE_APPLY_GRAMMAR_KEY = "voiceCapture.applyGrammarCorrection";
 const STORAGE_OUTPUT_MODE_KEY = "voiceCapture.outputMode";
 const DEFAULT_HINT =
-  "Tip: Use a quiet environment. Voice commands (EN/PT): comma/virgula, period/ponto, question mark/interrogacao, new line/nova linha, new bullet/novo item.";
+  "Tip: Use a quiet environment.";
 const DEFAULT_SUPPORTED_LANGUAGES = ["en-US", "pt-BR"];
 
 function providerLabel(providerId: string): string {
