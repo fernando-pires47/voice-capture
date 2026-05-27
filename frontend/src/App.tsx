@@ -681,7 +681,7 @@ export default function App() {
               <label className="font-label-sm text-on-surface-variant" htmlFor="languageSelect">Language</label>
               <select
                 id="languageSelect"
-                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 outline-none transition-colors"
+                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 pr-8 appearance-none chevron-dark outline-none transition-colors"
                 value={language}
                 onChange={(event) => onLanguageChange(event.target.value)}
               >
@@ -697,7 +697,7 @@ export default function App() {
               <label className="font-label-sm text-on-surface-variant" htmlFor="providerSelect">Grammar Provider</label>
               <select
                 id="providerSelect"
-                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 outline-none transition-colors"
+                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 pr-8 appearance-none chevron-dark outline-none transition-colors"
                 value={provider}
                 onChange={(event) => onProviderChange(event.target.value)}
                 disabled={providerSelectDisabled}
@@ -714,7 +714,7 @@ export default function App() {
               <label className="font-label-sm text-on-surface-variant" htmlFor="modelSelect">Grammar Model</label>
               <select
                 id="modelSelect"
-                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 outline-none transition-colors"
+                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 pr-8 appearance-none chevron-dark outline-none transition-colors"
                 value={model}
                 onChange={(event) => onModelChange(event.target.value)}
                 disabled={modelSelectDisabled}
@@ -731,7 +731,7 @@ export default function App() {
               <label className="font-label-sm text-on-surface-variant" htmlFor="outputModeSelect">Correction Structure</label>
               <select
                 id="outputModeSelect"
-                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 outline-none transition-colors"
+                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 pr-8 appearance-none chevron-dark outline-none transition-colors"
                 value={outputMode}
                 onChange={(event) => onOutputModeChange(event.target.value as OutputMode)}
                 disabled={outputModeSelectDisabled}
@@ -755,40 +755,40 @@ export default function App() {
             </label>
           </div>
 
-          <div className="flex flex-wrap gap-sm items-center pt-sm">
+          <div className="grid grid-cols-1 gap-sm pt-sm sm:grid-cols-2 lg:grid-cols-4">
             <button
               type="button"
-              className="bg-primary text-on-primary font-label-md px-md py-sm rounded-lg flex items-center gap-xs hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-45 disabled:cursor-not-allowed"
+              className="h-11 w-full bg-primary text-on-primary text-sm font-medium tracking-normal px-md py-sm rounded-lg inline-flex items-center justify-center gap-xs hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-45 disabled:cursor-not-allowed"
               onClick={startRecording}
               disabled={startDisabled}
             >
-              <span className="material-symbols-outlined text-sm">mic</span>
+              <span className="material-symbols-outlined text-[13px]">mic</span>
               Start Recording (R)
             </button>
             <button
               type="button"
-              className="bg-surface-variant text-on-surface font-label-md px-md py-sm rounded-lg flex items-center gap-xs hover:bg-surface-container-highest transition-colors border border-outline-variant/30 disabled:opacity-45 disabled:cursor-not-allowed"
+              className="h-11 w-full bg-surface-variant text-on-surface text-sm font-medium tracking-normal px-md py-sm rounded-lg inline-flex items-center justify-center gap-xs hover:bg-surface-container-highest transition-colors border border-outline-variant/30 disabled:opacity-45 disabled:cursor-not-allowed"
               onClick={stopRecording}
               disabled={stopDisabled}
             >
-              <span className="material-symbols-outlined text-sm">stop</span>
+              <span className="material-symbols-outlined text-[13px]">stop</span>
               Stop (S)
             </button>
             <button
               type="button"
-              className="bg-error/10 text-error font-label-md px-md py-sm rounded-lg flex items-center gap-xs hover:bg-error/20 transition-colors border border-error/20 disabled:opacity-45 disabled:cursor-not-allowed"
+              className="h-11 w-full bg-error/10 text-error text-sm font-medium tracking-normal px-md py-sm rounded-lg inline-flex items-center justify-center gap-xs hover:bg-error/20 transition-colors border border-error/20 disabled:opacity-45 disabled:cursor-not-allowed"
               onClick={cancelRecording}
               disabled={cancelDisabled}
             >
-              <span className="material-symbols-outlined text-sm">close</span>
+              <span className="material-symbols-outlined text-[13px]">close</span>
               Cancel (X)
             </button>
             <button
               type="button"
-              className="bg-transparent text-on-surface font-label-md px-md py-sm rounded-lg flex items-center gap-xs hover:bg-surface-variant transition-colors border border-outline-variant/30"
+              className="h-11 w-full bg-transparent text-on-surface text-sm font-medium tracking-normal px-md py-sm rounded-lg inline-flex items-center justify-center gap-xs hover:bg-surface-variant transition-colors border border-outline-variant/30"
               onClick={clearOutputs}
             >
-              <span className="material-symbols-outlined text-sm">delete</span>
+              <span className="material-symbols-outlined text-[13px]">delete</span>
               Clear (C)
             </button>
           </div>
@@ -804,10 +804,10 @@ export default function App() {
               <h3 className="font-label-md text-on-surface">Raw Transcript</h3>
               <button
                 type="button"
-                className="text-primary hover:text-primary/80 font-label-sm flex items-center gap-xs transition-colors"
+                className="text-primary hover:text-primary/80 text-sm font-medium tracking-normal inline-flex items-center gap-xs transition-colors"
                 onClick={() => void copyText(rawOutput)}
               >
-                <span className="material-symbols-outlined text-sm">content_copy</span>
+                <span className="material-symbols-outlined text-[13px]">content_copy</span>
                 Copy (1)
               </button>
             </div>
@@ -831,10 +831,10 @@ export default function App() {
               </h3>
               <button
                 type="button"
-                className="text-primary hover:text-primary/80 font-label-sm flex items-center gap-xs transition-colors"
+                className="text-primary hover:text-primary/80 text-sm font-medium tracking-normal inline-flex items-center gap-xs transition-colors"
                 onClick={() => void copyText(correctedOutput)}
               >
-                <span className="material-symbols-outlined text-sm">content_copy</span>
+                <span className="material-symbols-outlined text-[13px]">content_copy</span>
                 Copy (2)
               </button>
             </div>
