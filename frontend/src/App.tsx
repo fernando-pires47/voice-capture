@@ -755,7 +755,7 @@ export default function App() {
             </label>
           </div>
 
-          <div className="grid grid-cols-1 gap-sm pt-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-md pt-sm">
             <button
               type="button"
               className="h-11 w-full bg-primary text-on-primary text-sm font-medium tracking-normal px-md py-sm rounded-lg inline-flex items-center justify-center gap-xs hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-45 disabled:cursor-not-allowed"
@@ -771,7 +771,7 @@ export default function App() {
               onClick={stopRecording}
               disabled={stopDisabled}
             >
-              <span className="material-symbols-outlined text-[13px]">stop</span>
+              <span className="material-symbols-outlined text-[13px]">stop_circle</span>
               Stop (S)
             </button>
             <button
