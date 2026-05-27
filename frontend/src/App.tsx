@@ -161,18 +161,26 @@ function mergeTranscript(previous: string, delta: string): string {
 
 function getStatusClass(type: StatusType): string {
   if (type === "recording") {
-    return "bg-red-100 text-red-700";
+    return "bg-error/10 text-error border-error/20";
   }
   if (type === "processing") {
-    return "bg-amber-100 text-amber-800";
+    return "bg-primary/10 text-primary border-primary/20";
   }
   if (type === "done") {
-    return "bg-emerald-100 text-emerald-700";
+    return "bg-surface-bright text-on-surface border-on-secondary-container/20";
   }
   if (type === "error") {
-    return "bg-red-100 text-red-800";
+    return "bg-error/10 text-error border-error/20";
   }
-  return "bg-slate-200 text-slate-700";
+  return "bg-surface-variant text-on-surface-variant border-outline-variant/30";
+}
+
+function getStatusDotColor(type: StatusType): string {
+  if (type === "recording") return "bg-error";
+  if (type === "processing") return "bg-primary";
+  if (type === "done") return "bg-on-secondary-container";
+  if (type === "error") return "bg-error";
+  return "bg-outline";
 }
 
 export default function App() {
@@ -642,35 +650,38 @@ export default function App() {
 
   return (
     <>
-      <main className="mx-auto max-w-5xl px-5 pb-12 pt-10 sm:px-6">
-        <header>
-          <p className="m-0 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Fernando Pires</p>
-          <h1 className="mb-2 mt-2 flex items-center gap-2 text-[clamp(1.7rem,4vw,2.4rem)] font-bold leading-tight text-slate-900">
-            <img src="/icon.svg" alt="" className="h-7 w-7 shrink-0" />
+      <main className="max-w-[1200px] mx-auto w-full px-lg py-xl flex flex-col gap-lg flex-1">
+        <div className="flex flex-col gap-xs">
+          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Fernando Pires</span>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface flex items-center gap-sm">
+            <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>mic</span>
             Voice Capture Grammar Assistant
           </h1>
-          <p className="m-0 max-w-prose text-slate-500">
+          <p className="font-body-md text-body-md text-on-surface-variant">
             Record audio, transcribe it, and apply grammar correction with a configurable AI provider.
           </p>
-        </header>
+        </div>
 
         <section
           aria-label="Recording controls"
-          className="mt-6 rounded-[14px] border border-slate-200 bg-white p-5 shadow-panel"
+          className="bg-surface-container rounded-lg p-lg border border-outline-variant/50 shadow-sm flex flex-col gap-lg relative overflow-hidden"
         >
-          <div className="flex items-center justify-between gap-3">
-            <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getStatusClass(status.type)}`}>
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="flex justify-between items-center border-b border-outline-variant/30 pb-sm">
+            <span className={`inline-flex items-center gap-xs rounded-full px-sm py-xs font-label-sm text-label-sm border ${getStatusClass(status.type)}`}>
+              <span className={`w-2 h-2 rounded-full ${getStatusDotColor(status.type)}`}></span>
               {status.label}
             </span>
-            <span className="text-sm font-bold tabular-nums text-slate-500">{timerLabel}</span>
+            <span className="font-label-md text-on-surface font-mono text-lg">{timerLabel}</span>
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" aria-label="Grammar provider selection">
-            <label className="grid gap-1.5 text-xs font-semibold text-slate-500" htmlFor="languageSelect">
-              <span>Language</span>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-md">
+            <div className="flex flex-col gap-xs">
+              <label className="font-label-sm text-on-surface-variant" htmlFor="languageSelect">Language</label>
               <select
                 id="languageSelect"
-                className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-sm text-slate-900 outline-none ring-blue-200 transition focus-visible:ring-2"
+                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 outline-none transition-colors"
                 value={language}
                 onChange={(event) => onLanguageChange(event.target.value)}
               >
@@ -680,13 +691,13 @@ export default function App() {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
 
-            <label className="grid gap-1.5 text-xs font-semibold text-slate-500" htmlFor="providerSelect">
-              <span>Grammar Provider</span>
+            <div className="flex flex-col gap-xs">
+              <label className="font-label-sm text-on-surface-variant" htmlFor="providerSelect">Grammar Provider</label>
               <select
                 id="providerSelect"
-                className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-sm text-slate-900 outline-none ring-blue-200 transition focus-visible:ring-2"
+                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 outline-none transition-colors"
                 value={provider}
                 onChange={(event) => onProviderChange(event.target.value)}
                 disabled={providerSelectDisabled}
@@ -697,13 +708,13 @@ export default function App() {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
 
-            <label className="grid gap-1.5 text-xs font-semibold text-slate-500" htmlFor="modelSelect">
-              <span>Grammar Model</span>
+            <div className="flex flex-col gap-xs">
+              <label className="font-label-sm text-on-surface-variant" htmlFor="modelSelect">Grammar Model</label>
               <select
                 id="modelSelect"
-                className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-sm text-slate-900 outline-none ring-blue-200 transition focus-visible:ring-2"
+                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 outline-none transition-colors"
                 value={model}
                 onChange={(event) => onModelChange(event.target.value)}
                 disabled={modelSelectDisabled}
@@ -714,13 +725,13 @@ export default function App() {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
 
-            <label className="grid gap-1.5 text-xs font-semibold text-slate-500" htmlFor="outputModeSelect">
-              <span>Correction Structure</span>
+            <div className="flex flex-col gap-xs">
+              <label className="font-label-sm text-on-surface-variant" htmlFor="outputModeSelect">Correction Structure</label>
               <select
                 id="outputModeSelect"
-                className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-sm text-slate-900 outline-none ring-blue-200 transition focus-visible:ring-2"
+                className="bg-surface-container-high border border-outline-variant/50 text-on-surface text-sm rounded-lg focus:ring-primary/50 focus:border-primary/50 block w-full p-2.5 outline-none transition-colors"
                 value={outputMode}
                 onChange={(event) => onOutputModeChange(event.target.value as OutputMode)}
                 disabled={outputModeSelectDisabled}
@@ -728,114 +739,112 @@ export default function App() {
                 <option value="correction">Correction</option>
                 <option value="prompt">Prompt</option>
               </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-sm">
+            <span className="font-label-md text-on-surface">Apply grammar correction</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={applyGrammarCorrection}
+                onChange={() => onApplyGrammarCorrectionChange(!applyGrammarCorrection)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
 
-          <label className="mt-3 inline-flex items-center gap-2 text-sm text-slate-700" htmlFor="applyGrammarCorrection">
-            <span className="font-semibold">Apply grammar correction</span>
-            <button
-              id="applyGrammarCorrection"
-              role="switch"
-              aria-checked={applyGrammarCorrection}
-              type="button"
-              onClick={() => onApplyGrammarCorrectionChange(!applyGrammarCorrection)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                applyGrammarCorrection ? "bg-blue-900" : "bg-slate-300"
-              }`}
-            >
-              <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                  applyGrammarCorrection ? "translate-x-5" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </label>
-
-          <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
+          <div className="flex flex-wrap gap-sm items-center pt-sm">
             <button
               type="button"
-              className="rounded-xl border border-blue-900 bg-blue-900 px-3.5 py-2.5 text-sm font-semibold text-white transition hover:border-blue-950 hover:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-45"
+              className="bg-primary text-on-primary font-label-md px-md py-sm rounded-lg flex items-center gap-xs hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-45 disabled:cursor-not-allowed"
               onClick={startRecording}
               disabled={startDisabled}
             >
+              <span className="material-symbols-outlined text-sm">mic</span>
               Start Recording (R)
             </button>
             <button
               type="button"
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+              className="bg-surface-variant text-on-surface font-label-md px-md py-sm rounded-lg flex items-center gap-xs hover:bg-surface-container-highest transition-colors border border-outline-variant/30 disabled:opacity-45 disabled:cursor-not-allowed"
               onClick={stopRecording}
               disabled={stopDisabled}
             >
+              <span className="material-symbols-outlined text-sm">stop</span>
               Stop (S)
             </button>
             <button
               type="button"
-              className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-semibold text-red-800 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-45"
+              className="bg-error/10 text-error font-label-md px-md py-sm rounded-lg flex items-center gap-xs hover:bg-error/20 transition-colors border border-error/20 disabled:opacity-45 disabled:cursor-not-allowed"
               onClick={cancelRecording}
               disabled={cancelDisabled}
             >
+              <span className="material-symbols-outlined text-sm">close</span>
               Cancel (X)
             </button>
             <button
               type="button"
-              className="rounded-xl border border-slate-200 bg-transparent px-3.5 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-100"
+              className="bg-transparent text-on-surface font-label-md px-md py-sm rounded-lg flex items-center gap-xs hover:bg-surface-variant transition-colors border border-outline-variant/30"
               onClick={clearOutputs}
             >
+              <span className="material-symbols-outlined text-sm">delete</span>
               Clear (C)
             </button>
           </div>
 
-          <p className="mb-0 mt-3 text-sm text-slate-500">{hint}</p>
+          <div className="pt-sm border-t border-outline-variant/30">
+            <p className="font-body-md text-sm text-on-surface-variant">{hint}</p>
+          </div>
         </section>
 
-        <section aria-label="Outputs" className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <article className="rounded-[14px] border border-slate-200 bg-white p-4 shadow-panel">
-            <div className="mb-2.5 flex items-center justify-between gap-2">
-              <h2 className="m-0 text-base font-semibold text-slate-900">Raw Transcript</h2>
+        <section aria-label="Outputs" className="grid grid-cols-1 md:grid-cols-2 gap-lg h-full pb-xl">
+          <article className="bg-surface-container rounded-lg p-md border border-outline-variant/50 shadow-sm flex flex-col h-full min-h-[300px]">
+            <div className="flex justify-between items-center mb-sm">
+              <h3 className="font-label-md text-on-surface">Raw Transcript</h3>
               <button
                 type="button"
-                className="border-0 bg-transparent p-0 text-sm font-semibold text-blue-900 transition hover:text-blue-950"
+                className="text-primary hover:text-primary/80 font-label-sm flex items-center gap-xs transition-colors"
                 onClick={() => void copyText(rawOutput)}
               >
+                <span className="material-symbols-outlined text-sm">content_copy</span>
                 Copy (1)
               </button>
             </div>
-            <div className="min-h-[220px] rounded-xl border border-slate-200 bg-white p-3 text-base leading-relaxed text-slate-900 max-sm:min-h-[180px]">
+            <div className="w-full h-full flex-1 bg-surface-container-lowest border border-outline-variant/30 rounded-md p-md text-on-surface font-body-md overflow-auto">
               {rawOutput.trim() ? (
-                    <div className="text-sm leading-relaxed text-slate-900 [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_li]:my-1 [&_ol]:mb-3 [&_ol]:pl-5 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{rawOutput}</ReactMarkdown>
-              </div>
-              ) :
-              (
-                <p className="m-0 text-slate-400">
-                Transcript will appear here.
-              </p>
+                <div className="text-on-surface [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_li]:my-1 [&_ol]:mb-3 [&_ol]:pl-5 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{rawOutput}</ReactMarkdown>
+                </div>
+              ) : (
+                <p className="m-0 text-on-surface-variant/50">
+                  Transcript will appear here.
+                </p>
               )}
-          
-      
             </div>
           </article>
 
-          <article className="rounded-[14px] border border-slate-200 bg-white p-4 shadow-panel">
-            <div className="mb-2.5 flex items-center justify-between gap-2">
-              <h2 className="m-0 text-base font-semibold text-slate-900">
+          <article className="bg-surface-container rounded-lg p-md border border-outline-variant/50 shadow-sm flex flex-col h-full min-h-[300px]">
+            <div className="flex justify-between items-center mb-sm">
+              <h3 className="font-label-md text-on-surface">
                 {outputMode === "prompt" ? "Structured Output" : "Grammar Corrected"}
-              </h2>
+              </h3>
               <button
                 type="button"
-                className="border-0 bg-transparent p-0 text-sm font-semibold text-blue-900 transition hover:text-blue-950"
+                className="text-primary hover:text-primary/80 font-label-sm flex items-center gap-xs transition-colors"
                 onClick={() => void copyText(correctedOutput)}
               >
+                <span className="material-symbols-outlined text-sm">content_copy</span>
                 Copy (2)
               </button>
             </div>
-            <div className="min-h-[220px] rounded-xl border border-slate-200 bg-white p-3 text-base leading-relaxed text-slate-900 max-sm:min-h-[180px]">
+            <div className="w-full h-full flex-1 bg-surface-container-lowest border border-outline-variant/30 rounded-md p-md text-on-surface font-body-md overflow-auto">
               {correctedOutput.trim() && applyGrammarCorrection ? (
-                <div className="text-sm leading-relaxed text-slate-900 [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_li]:my-1 [&_ol]:mb-3 [&_ol]:pl-5 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5">
+                <div className="text-on-surface [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_li]:my-1 [&_ol]:mb-3 [&_ol]:pl-5 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{correctedOutput}</ReactMarkdown>
                 </div>
               ) : (
-                <p className="m-0 text-slate-400">
+                <p className="m-0 text-on-surface-variant/50">
                   {applyGrammarCorrection
                     ? "Structured output will appear here."
                     : "Grammar correction is disabled."}
@@ -849,7 +858,7 @@ export default function App() {
       <div
         role="status"
         aria-live="polite"
-        className={`pointer-events-none fixed bottom-5 right-5 rounded-lg bg-slate-900 px-3.5 py-2.5 text-sm text-white transition ${
+        className={`pointer-events-none fixed bottom-5 right-5 rounded-lg bg-surface-container-highest px-md py-sm text-sm text-on-surface transition border border-outline-variant/30 ${
           toastVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
         }`}
       >
