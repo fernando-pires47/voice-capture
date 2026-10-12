@@ -116,6 +116,58 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 This mode uses your existing `.env`, forces `APP_ENV=prod`, and sets restart policy to `unless-stopped` for both containers.
 
+### Publish images to Docker Hub
+
+With Node.js 22+ installed and Docker running, set `DOCKER_REPOSITORY` in the
+root `.env` (already ignored by Git):
+
+```env
+DOCKER_REPOSITORY=your-user/your-repository
+```
+
+Both scripts automatically read this file. Then run:
+
+```bash
+sudo docker login
+cd backend
+npm run build:prod
+```
+
+For the frontend, run `npm run build:prod` inside `frontend/` instead.
+Each script uses the version from its own directory's `package.json`:
+
+- `${DOCKER_REPOSITORY}:voice-capture-server-<version>`
+- `${DOCKER_REPOSITORY}:voice-capture-client-<version>`
+
+Both scripts use `sudo docker`, following the Builder project's publishing flow.
+`DOCKER_REPOSITORY` is required, without a default. Keep the actual repository
+in the ignored root `.env`, not in committed files. You must have push access to it.
+
+### Production with published images
+
+Use `docker-compose.prd.yml` in DockerHand and configure variables dynamically
+in the stack, without an `.env` file. Set `APP_ENV=prod`, configure the provider
+credentials, and set `DOCKER_REPOSITORY`, `BACKEND_VERSION`
+and `FRONTEND_VERSION` to the versions published by each `pushDocker.js` (currently
+`1.0.0`). See `.env.example` only as a reference for variable names.
+
+```bash
+sudo docker login
+sudo docker compose -f docker-compose.prd.yml pull
+sudo docker compose -f docker-compose.prd.yml up -d
+```
+
+No local build or source code is required. The API receives stack variables
+through the Compose `environment` section. When running the commands above
+manually, export the variables in the shell first.
+The static frontend reaches it through Nginx's `/api` proxy; provider credentials
+are not passed to the frontend container.
+
+Versions, bind addresses, and host ports must be explicitly set in the stack;
+the Compose file has no defaults for these variables. For direct external access, set
+`WEB_BIND_HOST=0.0.0.0`; use HTTPS through a reverse proxy for browser microphone
+access outside localhost, and update `CORS_ORIGINS` to your application's origin.
+
 ### Production logs
 
 ```bash
