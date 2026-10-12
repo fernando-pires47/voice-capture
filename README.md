@@ -163,11 +163,6 @@ manually, export the variables in the shell first.
 The static frontend reaches it through Nginx's `/api` proxy; provider credentials
 are not passed to the frontend container.
 
-Versions, bind addresses, and host ports must be explicitly set in the stack;
-the Compose file has no defaults for these variables. For direct external access, set
-`WEB_BIND_HOST=0.0.0.0`; use HTTPS through a reverse proxy for browser microphone
-access outside localhost, and update `CORS_ORIGINS` to your application's origin.
-
 ### Production logs
 
 ```bash

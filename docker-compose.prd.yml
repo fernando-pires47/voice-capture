@@ -27,7 +27,7 @@ services:
       OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL}
       OPENROUTER_TRANSCRIBE_MODEL: ${OPENROUTER_TRANSCRIBE_MODEL}
     ports:
-      - "${API_BIND_HOST:?Defina API_BIND_HOST na stack}:${API_PORT:?Defina API_PORT na stack}:8000"
+      - "${API_PORT}:8000"
 
   web:
     image: ${DOCKER_REPOSITORY:?Defina DOCKER_REPOSITORY na stack}:voice-capture-client-${FRONTEND_VERSION:?Defina FRONTEND_VERSION na stack}
@@ -35,4 +35,4 @@ services:
     depends_on:
       - api
     ports:
-      - "${WEB_BIND_HOST:?Defina WEB_BIND_HOST na stack}:${WEB_PORT:?Defina WEB_PORT na stack}:80"
+      - "${WEB_PORT}:80"
